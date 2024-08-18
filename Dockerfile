@@ -18,7 +18,7 @@ RUN pnpm prisma:generate
 RUN pnpm run build
 
 FROM base
-ENV DATABASE_URL=mongodb://root:password@localhost:27017/test?authSource=admin&directConnection=true&replicaSet=rs0
+ENV DATABASE_URL=mongodb://root:password@prisma-mongodb-mongo-1:27017/test?authSource=admin&directConnection=true&replicaSet=rs0
 COPY --from=deps /app/node_modules /app/node_modules
 COPY --from=build /app/dist /app/dist
 
