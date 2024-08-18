@@ -17,7 +17,7 @@ jobs:
       - name: docker up
         run: docker compose up -d
       - name: test
-        run: docker run --rm api pnpm test
+        run: docker run --rm prisma-mongodb-api pnpm test
       - name: docker donw
         if: ${{ always() }}
         run: docker compose down
