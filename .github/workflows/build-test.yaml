@@ -1,0 +1,23 @@
+name: build and test
+on:
+  pull_request:
+    types: [opened, synchronize]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: package.json
+      - name: docker up
+        run: docker compose up -d
+      - name: test
+        run: docker run --rm api pnpm test
+      - name: docker donw
+        if: ${{ always() }}
+        run: docker compose down
