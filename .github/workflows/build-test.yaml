@@ -16,8 +16,8 @@ jobs:
           package_json_file: package.json
       - name: docker up
         run: docker compose up -d
-      - name: test
-        run: docker run --rm prisma-mongodb-api pnpm test
+      - name: e2e test
+        run: docker run --rm prisma-mongodb-api pnpm test:e2e
       - name: docker donw
         if: ${{ always() }}
         run: docker compose down
