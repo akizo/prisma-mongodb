@@ -1,4 +1,4 @@
-FROM node:22.6-slim AS base
+FROM node:22.6-alpine AS base
 
 WORKDIR /app
 
@@ -18,6 +18,7 @@ RUN pnpm prisma:generate
 RUN pnpm run build
 
 FROM base
+ENV DATABASE_URL=mongodb://root:password@prisma-mongodb-mongo-1:27017/test?authSource=admin&directConnection=true&replicaSet=rs0
 COPY --from=deps /app/node_modules /app/node_modules
 COPY --from=build /app/dist /app/dist
 
