@@ -9,60 +9,60 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    extra_hosts:
+      - host.docker.internal:host-gateway
     networks:
       - app-network
     depends_on:
-      mongo6:
+      mongo:
         condition: service_healthy
 
-  # # This config is for MongoDB v4
-  # # It's a Replica Set (required for Prisma Client)
-  # mongo:
+  # -> only used for manual testing locally
+  # This config is for MongoDB v5+
+  # It's a Replica Set (required for Prisma Client)
+  # mongo6:
   #   build:
   #     context: ./mongodb_replica
   #     args:
-  #       MONGO_VERSION: 4
+  #       MONGO_VERSION: 6
   #   environment:
   #     MONGO_REPLICA_HOST: 127.0.0.1
-  #     MONGO_REPLICA_PORT: 27018
+  #     MONGO_REPLICA_PORT: 27019
   #     # Use "mongo" instead of "mongosh" before v5.0
-  #     MONGO_COMMAND: 'mongo'
+  #     MONGO_COMMAND: 'mongosh'
   #   ports:
-  #     - '27018:27018'
+  #     - '27019:27019'
   #   restart: unless-stopped
   #   healthcheck:
   #     # Use "mongo" instead of "mongosh" before v5.0
-  #     test: ['CMD', 'mongo', 'admin', '--port', '27018', '--eval', "db.adminCommand('ping').ok"]
+  #     test: ['CMD', 'mongosh', 'admin', '--port', '27019', '--eval', "db.adminCommand('ping').ok"]
   #     interval: 5s
   #     timeout: 2s
   #     retries: 20
   #   networks:
   #     - app-network
 
-  # -> only used for manual testing locally
-  # This config is for MongoDB v5+
-  # It's a Replica Set (required for Prisma Client)
-  mongo6:
-    build:
-      context: ./mongodb_replica
-      args:
-        MONGO_VERSION: 6
+  mongo:
+    image: mongo:7.0
     environment:
-      MONGO_REPLICA_HOST: 127.0.0.1
-      MONGO_REPLICA_PORT: 27019
-      # Use "mongo" instead of "mongosh" before v5.0
-      MONGO_COMMAND: 'mongosh'
+      - AUTH=no
+    command: [--replSet, rs0, --noauth, --bind_ip_all]
     ports:
-      - '27019:27019'
-    restart: unless-stopped
+      - 27017:27017
     healthcheck:
-      # Use "mongo" instead of "mongosh" before v5.0
-      test: ['CMD', 'mongosh', 'admin', '--port', '27019', '--eval', "db.adminCommand('ping').ok"]
-      interval: 5s
-      timeout: 2s
-      retries: 20
+      test: mongosh mongo-init.js
+      interval: 10s
+      start_period: 30s
+    volumes:
+      - mongodb_data:/data/db
+      - ./docker/db/init/db_init.js:/mongo-init.js
+    restart: always
     networks:
       - app-network
+
+volumes:
+  mongodb_data:
+
 networks:
   app-network:
     driver: bridge
